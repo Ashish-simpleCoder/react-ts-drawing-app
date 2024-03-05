@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import useSyncedRef from './use-synced-ref'
 
 type Target = null | EventTarget | (() => EventTarget | null)
