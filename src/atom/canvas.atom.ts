@@ -1,7 +1,7 @@
 import { atom, useAtom, useAtomValue } from 'jotai'
 import { ElementRef, RefObject } from 'react'
 
-type CanvasAtom = {
+export type CanvasAtom = {
    ref: RefObject<ElementRef<'canvas'>> | { current: null }
    activeClr: keyof typeof CANVAS_CLRS
    opacity: number
