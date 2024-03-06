@@ -1,7 +1,7 @@
-import { atom, useAtom, useAtomValue } from 'jotai'
+import { atom, useAtom, useAtomValue, getDefaultStore } from 'jotai'
 import { ElementRef, RefObject } from 'react'
 
-type CanvasAtom = {
+export type CanvasAtom = {
    ref: RefObject<ElementRef<'canvas'>> | { current: null }
    activeClr: keyof typeof CANVAS_CLRS
    opacity: number
@@ -41,3 +41,4 @@ export const useCanvasClrs = () => {
 
    return { activeClr, updateCanvasClr }
 }
+export const getCanvasCtx = () => getDefaultStore().get(canvasAtom).ref.current?.getContext('2d')!
