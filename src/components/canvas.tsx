@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect } from 'react'
-import { CANVAS_CLRS, useCanvasAtomValue } from '../atom/canvas.atom'
+import { CANVAS_CLRS, getCanvasCtx, useCanvasAtomValue } from '../atom/canvas.atom'
 import { useEventListener } from '../hooks/use-event-listener'
 import useCanvasDrawing from '../hooks/use-canvas-drawing'
 
@@ -8,12 +8,12 @@ export default function Canvas() {
    const { startDrawing, stopDrawing, drawOnCanvas } = useCanvasDrawing()
 
    // prettier-ignore
-   useEventListener(() => ref.current, 'mousedown', (e) => {
+   useEventListener(() => ref.current, 'pointerdown', (e) => {
       startDrawing()
       drawOnCanvas(e)
    })
-   useEventListener(() => ref.current, 'mousemove', drawOnCanvas)
-   useEventListener(() => ref.current, 'mouseup', stopDrawing)
+   useEventListener(() => ref.current, 'pointermove', drawOnCanvas)
+   useEventListener(() => ref.current, 'pointerup', stopDrawing)
 
    useLayoutEffect(() => {
       ref.current!.width = window.innerWidth
@@ -21,13 +21,13 @@ export default function Canvas() {
    }, [])
 
    useEffect(() => {
-      const ctx = ref.current?.getContext('2d')!
+      const ctx = getCanvasCtx()
       ctx.strokeStyle = CANVAS_CLRS[activeClr]
       ctx.fillStyle = CANVAS_CLRS[activeClr]
    }, [activeClr])
 
    useEffect(() => {
-      const ctx = ref.current?.getContext('2d')!
+      const ctx = getCanvasCtx()
       ctx.globalAlpha = opacity
    }, [opacity])
 

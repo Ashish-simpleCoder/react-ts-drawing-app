@@ -1,4 +1,4 @@
-import { atom, useAtom, useAtomValue } from 'jotai'
+import { atom, useAtom, useAtomValue, getDefaultStore } from 'jotai'
 import { ElementRef, RefObject } from 'react'
 
 export type CanvasAtom = {
@@ -41,3 +41,4 @@ export const useCanvasClrs = () => {
 
    return { activeClr, updateCanvasClr }
 }
+export const getCanvasCtx = () => getDefaultStore().get(canvasAtom).ref.current?.getContext('2d')!

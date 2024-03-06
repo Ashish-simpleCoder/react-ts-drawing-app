@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 
-import { CANVAS_CLRS, CanvasAtom, useCanvasAtomValue } from '../atom/canvas.atom'
+import { CANVAS_CLRS, CanvasAtom, getCanvasCtx, useCanvasAtomValue } from '../atom/canvas.atom'
 import useLocalStorage from './use-local-storage'
 import useSyncedRef from './use-synced-ref'
 
@@ -64,7 +64,7 @@ export default function useCanvasDrawing() {
    }, [])
 
    useEffect(() => {
-      const ctx = ref.current?.getContext('2d')!
+      const ctx = getCanvasCtx()
 
       if (finalPaths.length == 0) return
 
