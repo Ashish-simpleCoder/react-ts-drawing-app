@@ -14,7 +14,8 @@
     "classic-react-components": "^0.1.0",
     "jotai": "^2.6.5",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-icons": "^5.0.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.56",
