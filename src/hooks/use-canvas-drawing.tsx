@@ -1,29 +1,34 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 
-import { CANVAS_CLRS, CanvasAtom, getCanvasCtx, useCanvasAtomValue } from '../atom/canvas.atom'
-import useLocalStorage from './use-local-storage'
+import { CANVAS_CLRS, getCanvasCtx, useCanvasAtomDispatch, useCanvasAtomValue } from '../atom/canvas.atom'
 import useSyncedRef from './use-synced-ref'
+import useCanvasHistory from './use-canvas-history'
 
 export default function useCanvasDrawing() {
    const [isDrawing, setIsDrawing] = useState(false)
    const isDrawingRef = useSyncedRef(isDrawing)
    const { ref, activeClr, opacity } = useCanvasAtomValue()
+   const atomDispatch = useCanvasAtomDispatch()
 
    const prevPointRefRef = useRef<{ x: number; y: number; left: number; top: number } | null>(null)
    const currentWorkingPathRef = useRef<Array<[number, number]>>([])
    const moveToPathRef = useRef<Array<[number, number]>>([])
-   const [finalPaths, setFinalPaths] = useLocalStorage<
-      Array<{ path: [number, number][]; color: CanvasAtom['activeClr']; opacity: CanvasAtom['opacity'] }>
-   >('finalPaths', [])
+   const { clonedCanvasPath } = useCanvasHistory()
 
    const startDrawing = useCallback(() => setIsDrawing(true), [])
 
    const stopDrawing = useCallback(() => {
       setIsDrawing(false)
       flushSync(() => {
-         finalPaths.push({ color: activeClr, opacity, path: currentWorkingPathRef.current })
-         setFinalPaths(finalPaths)
+         if (currentWorkingPathRef.current.length > 0) {
+            atomDispatch((atom) => {
+               atom.canvas_path_histories.push({ color: activeClr, opacity, path: currentWorkingPathRef.current })
+               localStorage.setItem('canvas_path_histories', JSON.stringify(atom.canvas_path_histories))
+               atom.canvas_path_histories = [...atom.canvas_path_histories]
+               return atom
+            })
+         }
       })
       prevPointRefRef.current = null
       currentWorkingPathRef.current = []
@@ -65,11 +70,12 @@ export default function useCanvasDrawing() {
 
    useEffect(() => {
       const ctx = getCanvasCtx()
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
 
-      if (finalPaths.length == 0) return
+      if (clonedCanvasPath.length == 0) return
 
       const drawInitialCanvasPath = () => {
-         finalPaths.forEach((activePath) => {
+         clonedCanvasPath.forEach((activePath) => {
             let current_point_index = 0
 
             const draw = () => {
@@ -105,7 +111,7 @@ export default function useCanvasDrawing() {
       } catch (err) {
          console.log(err)
       }
-   }, [])
+   }, [clonedCanvasPath])
 
    return { isDrawing, setIsDrawing, startDrawing, stopDrawing, drawOnCanvas }
 }
