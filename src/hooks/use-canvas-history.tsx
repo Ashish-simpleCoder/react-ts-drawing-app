@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useEventListener } from './use-event-listener'
 import useSyncedRef from './use-synced-ref'
+import { useCanvasAtomValue, useCanvasHistoryIndex } from '../atom/canvas.atom'
 
-export default function useCanvasHistory<T>({ canvasPaths }: { canvasPaths: T[] }) {
-   const [history_index, setHistoryIndex] = useState(canvasPaths.length - 1)
+export default function useCanvasHistory() {
+   const { canvas_path_histories } = useCanvasAtomValue()
+   const { history_index, setHistoryIndex } = useCanvasHistoryIndex()
    const [pressed_keys, setPressedKeys] = useState<string[]>([])
-   const [clonedCanvasPath, setClonedCanvasPath] = useState(canvasPaths)
-   const canvasPathsRef = useSyncedRef(canvasPaths)
+   const [clonedCanvasPath, setClonedCanvasPath] = useState(canvas_path_histories)
+   const canvasPathsRef = useSyncedRef(canvas_path_histories)
 
    const handleKeyDown = (e: KeyboardEvent) => {
       if (ALLOWED_KEYS.includes(e.key)) {
@@ -36,10 +38,19 @@ export default function useCanvasHistory<T>({ canvasPaths }: { canvasPaths: T[] 
    useEventListener(window, 'blur', clearPressedKeys)
    useEventListener(window, 'focus', clearPressedKeys)
 
+   const undo = () => {
+      setHistoryIndex((i) => (i > -1 ? i - 1 : i))
+   }
+   const redo = () => {
+      setHistoryIndex((i) => {
+         return i < canvas_path_histories.length - 1 ? i + 1 : i
+      })
+   }
+
    useEffect(() => {
       // undo
       if (pressed_keys.length == 2 && pressed_keys[0] == 'Control' && pressed_keys[1] == 'z') {
-         setHistoryIndex((i) => (i > -1 ? i - 1 : i))
+         undo()
       }
 
       // redo
@@ -49,9 +60,7 @@ export default function useCanvasHistory<T>({ canvasPaths }: { canvasPaths: T[] 
          pressed_keys[1] == 'Shift' &&
          pressed_keys[2] == 'Z'
       ) {
-         setHistoryIndex((i) => {
-            return i < canvasPaths.length - 1 ? i + 1 : i
-         })
+         redo()
       }
    }, [pressed_keys])
 
@@ -63,8 +72,8 @@ export default function useCanvasHistory<T>({ canvasPaths }: { canvasPaths: T[] 
    }, [history_index])
 
    useEffect(() => {
-      setHistoryIndex(canvasPaths.length - 1)
-   }, [canvasPaths])
+      setHistoryIndex(canvas_path_histories.length - 1)
+   }, [canvas_path_histories])
 
    return { clonedCanvasPath }
 }

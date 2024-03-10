@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 
-import { CANVAS_CLRS, CanvasAtom, getCanvasCtx, useCanvasAtomValue } from '../atom/canvas.atom'
-import useLocalStorage from './use-local-storage'
+import { CANVAS_CLRS, getCanvasCtx, useCanvasAtomDispatch, useCanvasAtomValue } from '../atom/canvas.atom'
 import useSyncedRef from './use-synced-ref'
 import useCanvasHistory from './use-canvas-history'
 
@@ -10,14 +9,12 @@ export default function useCanvasDrawing() {
    const [isDrawing, setIsDrawing] = useState(false)
    const isDrawingRef = useSyncedRef(isDrawing)
    const { ref, activeClr, opacity } = useCanvasAtomValue()
+   const atomDispatch = useCanvasAtomDispatch()
 
    const prevPointRefRef = useRef<{ x: number; y: number; left: number; top: number } | null>(null)
    const currentWorkingPathRef = useRef<Array<[number, number]>>([])
    const moveToPathRef = useRef<Array<[number, number]>>([])
-   const [finalPaths, setFinalPaths] = useLocalStorage<
-      Array<{ path: [number, number][]; color: CanvasAtom['activeClr']; opacity: CanvasAtom['opacity'] }>
-   >('finalPaths', [])
-   const { clonedCanvasPath } = useCanvasHistory({ canvasPaths: finalPaths })
+   const { clonedCanvasPath } = useCanvasHistory()
 
    const startDrawing = useCallback(() => setIsDrawing(true), [])
 
@@ -25,9 +22,13 @@ export default function useCanvasDrawing() {
       setIsDrawing(false)
       flushSync(() => {
          if (currentWorkingPathRef.current.length > 0) {
-            finalPaths.push({ color: activeClr, opacity, path: currentWorkingPathRef.current })
+            atomDispatch((atom) => {
+               atom.canvas_path_histories.push({ color: activeClr, opacity, path: currentWorkingPathRef.current })
+               localStorage.setItem('canvas_path_histories', JSON.stringify(atom.canvas_path_histories))
+               atom.canvas_path_histories = [...atom.canvas_path_histories]
+               return atom
+            })
          }
-         setFinalPaths([...finalPaths])
       })
       prevPointRefRef.current = null
       currentWorkingPathRef.current = []
