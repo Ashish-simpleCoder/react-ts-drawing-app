@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useEventListener } from './use-event-listener'
 import useSyncedRef from './use-synced-ref'
 import { useCanvasAtomValue, useCanvasHistoryIndex } from '../atom/canvas.atom'
@@ -9,6 +9,7 @@ export default function useCanvasHistory() {
    const [pressed_keys, setPressedKeys] = useState<string[]>([])
    const [clonedCanvasPath, setClonedCanvasPath] = useState(canvas_path_histories)
    const canvasPathsRef = useSyncedRef(canvas_path_histories)
+   const keyup_timer_id = useRef<NodeJS.Timeout>()
 
    const handleKeyDown = (e: KeyboardEvent) => {
       if (ALLOWED_KEYS.includes(e.key)) {
@@ -22,7 +23,10 @@ export default function useCanvasHistory() {
    }
 
    const handleKeyUp = (_e: KeyboardEvent) => {
-      setTimeout(() => {
+      if (keyup_timer_id.current) {
+         clearTimeout(keyup_timer_id.current)
+      }
+      keyup_timer_id.current = setTimeout(() => {
          setPressedKeys((keys) => {
             keys.pop()
             return [...keys]
