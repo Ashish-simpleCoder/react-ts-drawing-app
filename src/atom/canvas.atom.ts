@@ -100,3 +100,4 @@ export const useCanvasHistoryIndex = () => {
 }
 
 export const getCanvasCtx = () => getDefaultStore().get(canvasAtom).ref.current?.getContext('2d')!
+export const getCanvasActiveClr = () => getDefaultStore().get(canvasAtom).activeClr
