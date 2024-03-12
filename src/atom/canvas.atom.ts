@@ -5,7 +5,7 @@ export type CanvasAtom = {
    ref: RefObject<ElementRef<'canvas'>> | { current: null }
    activeClr: keyof typeof CANVAS_CLRS
    opacity: number
-   history_index: number
+   history_cursor: number
    canvas_path_histories: {
       path: [number, number][]
       color: CanvasAtom['activeClr']
@@ -31,11 +31,11 @@ export const canvasAtom = atom({
    ref: { current: null },
    activeClr: 'white',
    opacity: 1,
-   history_index: (() => {
+   history_cursor: (() => {
       try {
          const paths = localStorage.getItem('canvas_path_histories')
          if (paths) {
-            return JSON.parse(paths).length
+            return JSON.parse(paths).length - 1
          }
       } catch {
          return -1
@@ -59,12 +59,13 @@ export const useCanvasAtomValue = () => useAtomValue(canvasAtom)
 export const useCanvasAtomDispatch = () => useAtom(canvasAtom)[1]
 
 export const useCanvasClrs = () => {
-   const [{ activeClr }, setCanvas] = useCanvasAtom()
+   const { activeClr } = useCanvasAtomValue()
+   const canvasDispatch = useCanvasAtomDispatch()
 
    const updateCanvasClr = (clr: keyof typeof CANVAS_CLRS) => {
-      setCanvas((s) => {
-         s.activeClr = clr
-         return { ...s }
+      canvasDispatch((atom) => {
+         atom.activeClr = clr
+         return { ...atom }
       })
    }
 
@@ -72,16 +73,17 @@ export const useCanvasClrs = () => {
 }
 
 export const useCanvasHistoryIndex = () => {
-   const [{ history_index, canvas_path_histories }, setCanvas] = useCanvasAtom()
+   const [{ history_cursor, canvas_path_histories }] = useCanvasAtom()
+   const canvasDispatch = useCanvasAtomDispatch()
 
    const setHistoryIndex = (cb: ((index: number) => number) | number) => {
-      setCanvas((s) => {
+      canvasDispatch((atom) => {
          if (typeof cb == 'function') {
-            s.history_index = cb(s.history_index)
+            atom.history_cursor = cb(atom.history_cursor)
          } else {
-            s.history_index = cb as number
+            atom.history_cursor = cb as number
          }
-         return { ...s }
+         return { ...atom }
       })
    }
 
@@ -94,7 +96,8 @@ export const useCanvasHistoryIndex = () => {
       })
    }
 
-   return { history_index, setHistoryIndex, undo, redo }
+   return { history_cursor, setHistoryIndex, undo, redo }
 }
 
 export const getCanvasCtx = () => getDefaultStore().get(canvasAtom).ref.current?.getContext('2d')!
+export const getCanvasActiveClr = () => getDefaultStore().get(canvasAtom).activeClr

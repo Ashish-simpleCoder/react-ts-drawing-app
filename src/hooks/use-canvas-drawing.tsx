@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 
-import { CANVAS_CLRS, getCanvasCtx, useCanvasAtomDispatch, useCanvasAtomValue } from '../atom/canvas.atom'
+import {
+   CANVAS_CLRS,
+   getCanvasActiveClr,
+   getCanvasCtx,
+   useCanvasAtomDispatch,
+   useCanvasAtomValue,
+} from '../atom/canvas.atom'
 import useSyncedRef from './use-synced-ref'
 import useCanvasHistory from './use-canvas-history'
 
@@ -9,7 +15,7 @@ export default function useCanvasDrawing() {
    const [isDrawing, setIsDrawing] = useState(false)
    const isDrawingRef = useSyncedRef(isDrawing)
    const { ref, activeClr, opacity } = useCanvasAtomValue()
-   const atomDispatch = useCanvasAtomDispatch()
+   const canvasDispatch = useCanvasAtomDispatch()
 
    const prevPointRefRef = useRef<{ x: number; y: number; left: number; top: number } | null>(null)
    const currentWorkingPathRef = useRef<Array<[number, number]>>([])
@@ -22,7 +28,7 @@ export default function useCanvasDrawing() {
       setIsDrawing(false)
       flushSync(() => {
          if (currentWorkingPathRef.current.length > 0) {
-            atomDispatch((atom) => {
+            canvasDispatch((atom) => {
                atom.canvas_path_histories.push({ color: activeClr, opacity, path: currentWorkingPathRef.current })
                localStorage.setItem('canvas_path_histories', JSON.stringify(atom.canvas_path_histories))
                atom.canvas_path_histories = [...atom.canvas_path_histories]
@@ -51,9 +57,13 @@ export default function useCanvasDrawing() {
       currentWorkingPathRef.current.push([startPoint.x, startPoint.y])
       moveToPathRef.current.push([currentPoint.x, currentPoint.y])
 
+      const active_canvas_clr = getCanvasActiveClr()
+
       ctx.lineJoin = 'round'
       ctx.lineCap = 'round'
       ctx.lineWidth = 3
+      ctx.strokeStyle = active_canvas_clr
+      ctx.fillStyle = active_canvas_clr
 
       ctx.beginPath()
       ctx.moveTo(startPoint.x, startPoint.y)
