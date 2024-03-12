@@ -1,8 +1,8 @@
-import { FaRedo, FaUndo } from 'react-icons/fa'
 import { useCanvasAtomValue, useCanvasHistoryIndex } from '../atom/canvas.atom'
+import { CgRedo, CgUndo } from 'react-icons/cg'
 
 export default function CanvasActionContainer() {
-   const { redo, undo, history_index } = useCanvasHistoryIndex()
+   const { redo, undo, history_cursor } = useCanvasHistoryIndex()
    const { canvas_path_histories } = useCanvasAtomValue()
 
    return (
@@ -12,17 +12,17 @@ export default function CanvasActionContainer() {
                title='Undo -- CtrlZ'
                className={'text-white disabled:text-gray-300 cursor-pointer disabled:cursor-not-allowed'}
                onClick={undo}
-               disabled={history_index == -1}
+               disabled={history_cursor == -1}
             >
-               <FaUndo />
+               <CgUndo />
             </button>
             <button
                title='Redo -- Ctrl Shift Z'
                className={'text-white disabled:text-gray-300 cursor-pointer disabled:cursor-not-allowed'}
                onClick={redo}
-               disabled={history_index == canvas_path_histories.length - 1}
+               disabled={history_cursor == canvas_path_histories.length - 1}
             >
-               <FaRedo />
+               <CgRedo />
             </button>
          </div>
       </section>

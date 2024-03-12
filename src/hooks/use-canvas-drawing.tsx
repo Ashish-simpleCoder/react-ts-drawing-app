@@ -9,7 +9,7 @@ export default function useCanvasDrawing() {
    const [isDrawing, setIsDrawing] = useState(false)
    const isDrawingRef = useSyncedRef(isDrawing)
    const { ref, activeClr, opacity } = useCanvasAtomValue()
-   const atomDispatch = useCanvasAtomDispatch()
+   const canvasDispatch = useCanvasAtomDispatch()
 
    const prevPointRefRef = useRef<{ x: number; y: number; left: number; top: number } | null>(null)
    const currentWorkingPathRef = useRef<Array<[number, number]>>([])
@@ -22,7 +22,7 @@ export default function useCanvasDrawing() {
       setIsDrawing(false)
       flushSync(() => {
          if (currentWorkingPathRef.current.length > 0) {
-            atomDispatch((atom) => {
+            canvasDispatch((atom) => {
                atom.canvas_path_histories.push({ color: activeClr, opacity, path: currentWorkingPathRef.current })
                localStorage.setItem('canvas_path_histories', JSON.stringify(atom.canvas_path_histories))
                atom.canvas_path_histories = [...atom.canvas_path_histories]

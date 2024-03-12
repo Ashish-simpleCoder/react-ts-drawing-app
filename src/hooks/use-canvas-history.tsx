@@ -5,7 +5,7 @@ import { useCanvasAtomValue, useCanvasHistoryIndex } from '../atom/canvas.atom'
 
 export default function useCanvasHistory() {
    const { canvas_path_histories } = useCanvasAtomValue()
-   const { history_index, setHistoryIndex } = useCanvasHistoryIndex()
+   const { history_cursor, setHistoryIndex } = useCanvasHistoryIndex()
    const [pressed_keys, setPressedKeys] = useState<string[]>([])
    const [clonedCanvasPath, setClonedCanvasPath] = useState(canvas_path_histories)
    const canvasPathsRef = useSyncedRef(canvas_path_histories)
@@ -70,10 +70,10 @@ export default function useCanvasHistory() {
 
    useEffect(() => {
       setClonedCanvasPath(() => {
-         const arr = canvasPathsRef.current.slice(0, history_index + 1)
+         const arr = canvasPathsRef.current.slice(0, history_cursor + 1)
          return arr
       })
-   }, [history_index])
+   }, [history_cursor])
 
    useEffect(() => {
       setHistoryIndex(canvas_path_histories.length - 1)
